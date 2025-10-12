@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCSC Attendance Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-futbol"></i> DCSC Attendance Dashboard</h1>
+                <p class="subtitle">Comprehensive attendance analytics for coaches and directors</p>
+            </div>
+        </header>
+
+        <!-- Upload Section -->
+        <div class="upload-section" id="uploadSection">
+            <div class="upload-card">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h2>Upload Attendance Data</h2>
+                <p>Upload your CSV file to analyze attendance statistics</p>
+                
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept=".csv" style="display: none;">
+                    <label for="fileInput" class="upload-label">
+                        <i class="fas fa-file-csv"></i>
+                        <span>Click to select CSV file or drag & drop</span>
+                    </label>
+                </div>
+                
+                <div id="fileName" class="file-name"></div>
+                <button id="uploadBtn" class="btn btn-primary" style="display: none;">
+                    <i class="fas fa-upload"></i> Upload & Analyze
+                </button>
+                <div id="uploadStatus" class="status-message"></div>
+            </div>
+        </div>
+
+        <!-- Dashboard Section (Hidden initially) -->
+        <div class="dashboard" id="dashboard" style="display: none;">
+            
+            <!-- Summary Cards -->
+            <div class="summary-cards" id="summaryCards">
+                <!-- Cards will be populated by JavaScript -->
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="overview"><i class="fas fa-chart-line"></i> Overview</button>
+                <button class="tab-btn" data-tab="teams"><i class="fas fa-users"></i> Teams</button>
+                <button class="tab-btn" data-tab="players"><i class="fas fa-user"></i> Players</button>
+                <button class="tab-btn" data-tab="trends"><i class="fas fa-calendar-alt"></i> Trends</button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                
+                <!-- Overview Tab -->
+                <div class="tab-pane active" id="overview">
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <h3>Attendance Distribution</h3>
+                            <canvas id="attendanceChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Games vs Practice</h3>
+                            <canvas id="eventTypeChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <h3>Seasonal Attendance</h3>
+                            <canvas id="seasonChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Monthly Trend</h3>
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Teams Tab -->
+                <div class="tab-pane" id="teams">
+                    <div class="charts-row">
+                        <div class="chart-card full-width">
+                            <h3>Team Attendance Comparison</h3>
+                            <canvas id="teamComparisonChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="charts-row">
+                        <div class="chart-card full-width">
+                            <h3>Games vs Practice by Team</h3>
+                            <canvas id="teamEventComparisonChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="data-table-card">
+                        <h3>Team Statistics</h3>
+                        <div class="table-container">
+                            <table id="teamStatsTable" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Team Name</th>
+                                        <th>Players</th>
+                                        <th>Events</th>
+                                        <th>Attendance Rate</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Players Tab -->
+                <div class="tab-pane" id="players">
+                    <div class="filter-section">
+                        <div class="filter-group">
+                            <label for="playerSearch">Search Player:</label>
+                            <input type="text" id="playerSearch" placeholder="Enter player name...">
+                        </div>
+                        <div class="filter-group">
+                            <label for="teamFilter">Filter by Team:</label>
+                            <select id="teamFilter">
+                                <option value="">All Teams</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="data-table-card">
+                        <h3>Player Attendance Details</h3>
+                        <div class="table-container">
+                            <table id="playerStatsTable" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Player Name</th>
+                                        <th>Team</th>
+                                        <th>Attendance Rate</th>
+                                        <th>Attended</th>
+                                        <th>Total Events</th>
+                                        <th>Absent</th>
+                                        <th>Late</th>
+                                        <th>Injured</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <h3>Top 10 Performers</h3>
+                            <canvas id="topPlayersChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Players Needing Attention</h3>
+                            <canvas id="bottomPlayersChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trends Tab -->
+                <div class="tab-pane" id="trends">
+                    <div class="charts-row">
+                        <div class="chart-card full-width">
+                            <h3>Average Players Per Event by Team & Season</h3>
+                            <canvas id="teamSeasonAvgChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-cards">
+                        <div class="insight-card">
+                            <i class="fas fa-trophy"></i>
+                            <h4>Best Season</h4>
+                            <p id="bestSeason">-</p>
+                        </div>
+                        <div class="insight-card">
+                            <i class="fas fa-calendar-check"></i>
+                            <h4>Best Event Type</h4>
+                            <p id="bestEventType">-</p>
+                        </div>
+                        <div class="insight-card">
+                            <i class="fas fa-star"></i>
+                            <h4>Top Team</h4>
+                            <p id="topTeam">-</p>
+                        </div>
+                        <div class="insight-card">
+                            <i class="fas fa-chart-line"></i>
+                            <h4>Trend</h4>
+                            <p id="trend">-</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Upload New File Button -->
+            <div class="action-buttons">
+                <button id="uploadNewBtn" class="btn btn-secondary">
+                    <i class="fas fa-upload"></i> Upload New File
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+            <div class="loader"></div>
+            <p>Analyzing data...</p>
+        </div>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
+
