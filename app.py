@@ -202,6 +202,31 @@ def analyze_attendance_data(df):
             'practice_count': int(practice_records)
         })
     
+    # Event-level attendance tracking (for trend analysis)
+    event_attendance_tracking = []
+    for (team_id, event_name, date), event_group in df.groupby(['team_id', 'event_name', 'date']):
+        if pd.notna(date):
+            team_name = event_group['team_name'].iloc[0]
+            event_type = event_group['event_type'].iloc[0]
+            
+            # Count present players (including late)
+            present_count = len(event_group[event_group['attendance_status'].isin(['present', 'late'])])
+            total_players = len(event_group)
+            
+            event_attendance_tracking.append({
+                'team_id': int(team_id),
+                'team_name': team_name,
+                'event_name': event_name,
+                'date': date.strftime('%Y-%m-%d'),
+                'event_type': event_type,
+                'present_count': int(present_count),
+                'total_players': int(total_players),
+                'attendance_rate': round((present_count / total_players * 100), 2) if total_players > 0 else 0
+            })
+    
+    # Sort by date
+    event_attendance_tracking = sorted(event_attendance_tracking, key=lambda x: x['date'])
+    
     return {
         'summary': {
             'total_records': int(total_records),
@@ -217,7 +242,8 @@ def analyze_attendance_data(df):
         'team_season_avg': team_season_avg,
         'player_stats': player_stats,
         'monthly_trend': monthly_trend,
-        'team_event_comparison': team_event_comparison
+        'team_event_comparison': team_event_comparison,
+        'event_attendance_tracking': event_attendance_tracking
     }
 
 @app.route('/')

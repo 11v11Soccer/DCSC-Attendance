@@ -52,6 +52,13 @@ body {
     gap: 15px;
 }
 
+.header-logo {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    vertical-align: middle;
+}
+
 .header-content .subtitle {
     font-size: 1.1em;
     opacity: 0.9;
@@ -315,10 +322,15 @@ body {
     padding: 25px;
     border-radius: 12px;
     box-shadow: var(--shadow);
+    min-height: 400px;
 }
 
 .chart-card.full-width {
     grid-column: 1 / -1;
+}
+
+.chart-card.player-chart-card {
+    min-height: 800px; /* Taller for 25 players */
 }
 
 .chart-card h3 {
@@ -344,6 +356,8 @@ body {
 
 .table-container {
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 600px; /* Approximately 50 rows */
 }
 
 .data-table {
@@ -353,6 +367,9 @@ body {
 
 .data-table thead {
     background-color: #f8fafc;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .data-table th {
@@ -362,6 +379,7 @@ body {
     color: var(--text-primary);
     border-bottom: 2px solid var(--border-color);
     white-space: nowrap;
+    background-color: #f8fafc;
 }
 
 .data-table td {

@@ -13,7 +13,10 @@
         <!-- Header -->
         <header class="header">
             <div class="header-content">
-                <h1><i class="fas fa-futbol"></i> DCSC Attendance Dashboard</h1>
+                <h1>
+                    <img src="{{ url_for('static', filename='DCSC_Soccer.png') }}" alt="DCSC Logo" class="header-logo">
+                    DCSC Attendance Dashboard
+                </h1>
                 <p class="subtitle">Comprehensive attendance analytics for coaches and directors</p>
             </div>
         </header>
@@ -64,6 +67,45 @@
                 
                 <!-- Overview Tab -->
                 <div class="tab-pane active" id="overview">
+                    <!-- Overview Filters -->
+                    <div class="filter-section">
+                        <div class="filter-group">
+                            <label for="overviewGenderFilter">Gender</label>
+                            <select id="overviewGenderFilter">
+                                <option value="">All Genders</option>
+                                <option value="G">Girls</option>
+                                <option value="B">Boys</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="overviewBirthYearFilter">Birth Year</label>
+                            <select id="overviewBirthYearFilter">
+                                <option value="">All Birth Years</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="overviewTeamFilter">Team</label>
+                            <select id="overviewTeamFilter">
+                                <option value="">All Teams</option>
+                            </select>
+                        </div>
+                        <div class="filter-group" style="display: flex; align-items: flex-end; gap: 10px;">
+                            <button id="updateOverviewReports" class="btn btn-primary">
+                                <i class="fas fa-chart-bar"></i> Update Reports
+                            </button>
+                            <button id="resetOverviewFilters" class="btn btn-secondary">
+                                <i class="fas fa-redo"></i> Reset Filters
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- No Data Message -->
+                    <div id="noDataMessage" style="display: none; padding: 40px; text-align: center; background: #fee2e2; border: 2px solid #ef4444; border-radius: 12px; margin-bottom: 25px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3em; color: #ef4444; margin-bottom: 15px;"></i>
+                        <h3 style="color: #991b1b; margin-bottom: 10px;">No Data Available</h3>
+                        <p style="color: #7f1d1d;">No records match your selected filter combination. Please try different filters.</p>
+                    </div>
+                    
                     <div class="charts-row">
                         <div class="chart-card">
                             <h3>Attendance Distribution</h3>
@@ -120,6 +162,47 @@
                             </table>
                         </div>
                     </div>
+                    
+                    <!-- Team Attendance Tracking -->
+                    <div class="data-table-card">
+                        <h3>Team Attendance Tracking</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 20px;">Track the number of players attending each event over time</p>
+                        
+                        <div class="filter-section" style="margin-bottom: 25px;">
+                            <div class="filter-group">
+                                <label for="trackingTeamFilter">Select Team</label>
+                                <select id="trackingTeamFilter">
+                                    <option value="">Select a team...</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="trackingEventTypeFilter">Event Type</label>
+                                <select id="trackingEventTypeFilter">
+                                    <option value="all">All Events</option>
+                                    <option value="Game">Games Only</option>
+                                    <option value="Practice">Practices Only</option>
+                                </select>
+                            </div>
+                            <div class="filter-group" style="display: flex; align-items: flex-end;">
+                                <button id="updateTrackingChart" class="btn btn-primary">
+                                    <i class="fas fa-chart-line"></i> Show Trend
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="trackingChartContainer" style="display: none;">
+                            <div class="chart-card" style="min-height: 500px;">
+                                <h3 id="trackingChartTitle">Attendance Trend</h3>
+                                <canvas id="teamAttendanceTrackingChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div id="trackingNoSelection" style="padding: 40px; text-align: center; background: #f8fafc; border: 2px dashed var(--border-color); border-radius: 12px;">
+                            <i class="fas fa-info-circle" style="font-size: 3em; color: var(--primary-color); margin-bottom: 15px;"></i>
+                            <h4 style="color: var(--text-primary); margin-bottom: 10px;">Select a Team to View Attendance Trend</h4>
+                            <p style="color: var(--text-secondary);">Choose a team and event type above, then click "Show Trend" to see how attendance changes over time.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Players Tab -->
@@ -159,12 +242,12 @@
                     </div>
                     
                     <div class="charts-row">
-                        <div class="chart-card">
-                            <h3>Top 10 Performers</h3>
+                        <div class="chart-card player-chart-card">
+                            <h3>Top 25 Performers</h3>
                             <canvas id="topPlayersChart"></canvas>
                         </div>
-                        <div class="chart-card">
-                            <h3>Players Needing Attention</h3>
+                        <div class="chart-card player-chart-card">
+                            <h3>Top 25 Players Needing Attention (Absence Rate)</h3>
                             <canvas id="bottomPlayersChart"></canvas>
                         </div>
                     </div>
