@@ -330,7 +330,7 @@ body {
 }
 
 .chart-card.player-chart-card {
-    min-height: 800px; /* Taller for 25 players */
+    min-height: 1400px; /* Taller for 50 players */
 }
 
 .chart-card h3 {

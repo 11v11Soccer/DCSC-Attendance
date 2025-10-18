@@ -1217,7 +1217,7 @@ function renderPlayersTab(data) {
     const topPlayersCtx = document.getElementById('topPlayersChart').getContext('2d');
     if (charts.topPlayers) charts.topPlayers.destroy();
     
-    const topPlayers = data.player_stats.slice(0, 25);
+    const topPlayers = data.player_stats.slice(0, 50);
     
     charts.topPlayers = new Chart(topPlayersCtx, {
         type: 'bar',
@@ -1254,7 +1254,7 @@ function renderPlayersTab(data) {
     const bottomPlayers = data.player_stats
         .filter(p => p.total_events >= 3) // Only players with at least 3 events
         .sort((a, b) => a.attendance_rate - b.attendance_rate)
-        .slice(0, 25);
+        .slice(0, 50);
     
     charts.bottomPlayers = new Chart(bottomPlayersCtx, {
         type: 'bar',
