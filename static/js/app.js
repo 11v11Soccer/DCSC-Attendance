@@ -940,7 +940,9 @@ function initializeTeamCalendar(data) {
             alert('Please select a team first');
             return;
         }
-        renderTeamCalendar(data.team_calendar_data, teamName);
+        const startMonth = parseInt(document.getElementById('teamCalStartMonth').value);
+        const endMonth = parseInt(document.getElementById('teamCalEndMonth').value);
+        renderTeamCalendar(data.team_calendar_data, teamName, startMonth, endMonth);
     });
 }
 
@@ -981,7 +983,7 @@ function generateTeamCalendarMonth(year, month, eventsByDate) {
             const totalNotReported = events.reduce((sum, e) => sum + e.not_reported, 0);
             
             const tooltipText = events.map(e => e.event_name).join(', ') + 
-                `\nPresent: ${totalPresent}, Absent: ${totalAbsent}, Late: ${totalLate}, Injured: ${totalInjured}`;
+                `\nPresent: ${totalPresent}, Absent: ${totalAbsent}, Late: ${totalLate}, Injured: ${totalInjured}, Not Reported: ${totalNotReported}`;
             
             html += `
                 <div class="calendar-day team-event" title="${tooltipText}">
@@ -1005,7 +1007,7 @@ function generateTeamCalendarMonth(year, month, eventsByDate) {
 }
 
 // Render Team Calendar
-function renderTeamCalendar(calendarData, teamName) {
+function renderTeamCalendar(calendarData, teamName, startMonth = 7, endMonth = 6) {
     const container = document.getElementById('teamCalendarContainer');
     const noSelection = document.getElementById('teamCalendarNoSelection');
     const calendarGrid = document.getElementById('teamCalendarGrid');
@@ -1033,13 +1035,30 @@ function renderTeamCalendar(calendarData, teamName) {
     const minYear = Math.min(...dates.map(d => d.getFullYear()));
     const maxYear = Math.max(...dates.map(d => d.getFullYear()));
     
-    // Generate calendar for each month in the year range
+    // Generate calendar for selected period (Aug-Jul or user-selected)
     let calendarHTML = '<div class="calendar-grid">';
-    for (let year = minYear; year <= maxYear; year++) {
-        for (let month = 0; month < 12; month++) {
-            calendarHTML += generateTeamCalendarMonth(year, month, eventsByDate);
+    
+    // Determine year for calendar generation
+    const currentYear = minYear;
+    const nextYear = maxYear >= minYear + 1 ? maxYear : minYear + 1;
+    
+    // If start month > end month, we span two years (e.g., Aug 2025 to July 2026)
+    if (startMonth > endMonth) {
+        // Start month to December of current year
+        for (let month = startMonth; month < 12; month++) {
+            calendarHTML += generateTeamCalendarMonth(currentYear, month, eventsByDate);
+        }
+        // January to end month of next year
+        for (let month = 0; month <= endMonth; month++) {
+            calendarHTML += generateTeamCalendarMonth(nextYear, month, eventsByDate);
+        }
+    } else {
+        // Same year (e.g., Jan to Dec)
+        for (let month = startMonth; month <= endMonth; month++) {
+            calendarHTML += generateTeamCalendarMonth(currentYear, month, eventsByDate);
         }
     }
+    
     calendarHTML += '</div>';
     
     // Add legend
@@ -1082,6 +1101,13 @@ function renderTeamCalendar(calendarData, teamName) {
     const totalRecords = totalPresent + totalAbsent + totalLate + totalInjured + totalNotReported;
     const attendanceRate = totalRecords > 0 ? (((totalPresent + totalLate) / totalRecords) * 100).toFixed(1) : 0;
     
+    // Calculate averages per event
+    const avgPresent = (totalPresent / totalEvents).toFixed(1);
+    const avgAbsent = (totalAbsent / totalEvents).toFixed(1);
+    const avgLate = (totalLate / totalEvents).toFixed(1);
+    const avgInjured = (totalInjured / totalEvents).toFixed(1);
+    const avgNotReported = (totalNotReported / totalEvents).toFixed(1);
+    
     summaryDiv.innerHTML = `
         <h4>Summary for ${teamName}</h4>
         <div class="calendar-summary-grid">
@@ -1090,24 +1116,24 @@ function renderTeamCalendar(calendarData, teamName) {
                 <div class="value">${totalEvents}</div>
             </div>
             <div class="calendar-summary-item">
-                <div class="label">Total Records</div>
-                <div class="value">${totalRecords}</div>
+                <div class="label">Avg Present/Event</div>
+                <div class="value">${avgPresent}</div>
             </div>
             <div class="calendar-summary-item">
-                <div class="label">Present</div>
-                <div class="value">${totalPresent}</div>
+                <div class="label">Avg Absent/Event</div>
+                <div class="value">${avgAbsent}</div>
             </div>
             <div class="calendar-summary-item">
-                <div class="label">Absent</div>
-                <div class="value">${totalAbsent}</div>
+                <div class="label">Avg Late/Event</div>
+                <div class="value">${avgLate}</div>
             </div>
             <div class="calendar-summary-item">
-                <div class="label">Late</div>
-                <div class="value">${totalLate}</div>
+                <div class="label">Avg Injured/Event</div>
+                <div class="value">${avgInjured}</div>
             </div>
             <div class="calendar-summary-item">
-                <div class="label">Injured</div>
-                <div class="value">${totalInjured}</div>
+                <div class="label">Avg Not Reported/Event</div>
+                <div class="value">${avgNotReported}</div>
             </div>
             <div class="calendar-summary-item">
                 <div class="label">Attendance Rate</div>
@@ -1350,12 +1376,14 @@ function initializePlayerCalendar(data) {
             alert('Please select a player first');
             return;
         }
-        renderPlayerCalendar(data.player_calendar_data, parseInt(playerId));
+        const startMonth = parseInt(document.getElementById('playerCalStartMonth').value);
+        const endMonth = parseInt(document.getElementById('playerCalEndMonth').value);
+        renderPlayerCalendar(data.player_calendar_data, parseInt(playerId), startMonth, endMonth);
     });
 }
 
 // Render Player Calendar
-function renderPlayerCalendar(calendarData, playerId) {
+function renderPlayerCalendar(calendarData, playerId, startMonth = 7, endMonth = 6) {
     const container = document.getElementById('playerCalendarContainer');
     const noSelection = document.getElementById('playerCalendarNoSelection');
     const calendarGrid = document.getElementById('playerCalendarGrid');
@@ -1387,13 +1415,30 @@ function renderPlayerCalendar(calendarData, playerId) {
     const minYear = Math.min(...dates.map(d => d.getFullYear()));
     const maxYear = Math.max(...dates.map(d => d.getFullYear()));
     
-    // Generate calendar for each month in the year range
+    // Generate calendar for selected period (Aug-Jul or user-selected)
     let calendarHTML = '<div class="calendar-grid">';
-    for (let year = minYear; year <= maxYear; year++) {
-        for (let month = 0; month < 12; month++) {
-            calendarHTML += generateCalendarMonth(year, month, eventsByDate);
+    
+    // Determine year for calendar generation
+    const currentYear = minYear;
+    const nextYear = maxYear >= minYear + 1 ? maxYear : minYear + 1;
+    
+    // If start month > end month, we span two years (e.g., Aug 2025 to July 2026)
+    if (startMonth > endMonth) {
+        // Start month to December of current year
+        for (let month = startMonth; month < 12; month++) {
+            calendarHTML += generateCalendarMonth(currentYear, month, eventsByDate);
+        }
+        // January to end month of next year
+        for (let month = 0; month <= endMonth; month++) {
+            calendarHTML += generateCalendarMonth(nextYear, month, eventsByDate);
+        }
+    } else {
+        // Same year (e.g., Jan to Dec)
+        for (let month = startMonth; month <= endMonth; month++) {
+            calendarHTML += generateCalendarMonth(currentYear, month, eventsByDate);
         }
     }
+    
     calendarHTML += '</div>';
     
     // Add legend
@@ -1459,6 +1504,10 @@ function renderPlayerCalendar(calendarData, playerId) {
             <div class="calendar-summary-item">
                 <div class="label">Injured</div>
                 <div class="value">${statusCounts.injured}</div>
+            </div>
+            <div class="calendar-summary-item">
+                <div class="label">Not Reported</div>
+                <div class="value">${statusCounts.not_reported}</div>
             </div>
             <div class="calendar-summary-item">
                 <div class="label">Attendance Rate</div>
