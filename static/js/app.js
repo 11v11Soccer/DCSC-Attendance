@@ -546,6 +546,9 @@ function initializeTabs() {
 
 // Render dashboard
 function renderDashboard(data) {
+    console.log('=== renderDashboard called ===');
+    console.log('data.summary.total_players:', data.summary.total_players);
+    
     // Store original data for filtering
     if (!originalAnalysisData) {
         originalAnalysisData = JSON.parse(JSON.stringify(data)); // Deep copy
@@ -563,6 +566,10 @@ function renderDashboard(data) {
 
 // Render summary cards
 function renderSummaryCards(summary) {
+    console.log('=== renderSummaryCards called ===');
+    console.log('summary.total_players:', summary.total_players);
+    console.log('Full summary:', summary);
+    
     const container = document.getElementById('summaryCards');
     
     const cards = [
