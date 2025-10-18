@@ -68,10 +68,9 @@ function filterOverviewData(data, teamFilter, genderFilter, birthYearFilter) {
         teamNames.includes(p.team_name)
     );
     
-    // Filter other stats
-    const filteredEventTypeStats = data.event_type_stats; // Keep all event types
-    const filteredSeasonStats = data.season_stats; // Keep all seasons
-    const filteredMonthlyTrend = data.monthly_trend; // Keep all months
+    // Filter calendar data for accurate event-level stats
+    const filteredCalendarData = data.player_calendar_data ? 
+        data.player_calendar_data.filter(e => teamNames.includes(e.team_name)) : [];
     
     // Calculate overall summary for filtered data
     let totalRecords = 0;
@@ -93,6 +92,95 @@ function filterOverviewData(data, teamFilter, genderFilter, birthYearFilter) {
         attendanceDistribution.present += (p.events_attended - p.late_count);
     });
     
+    // Recalculate event type stats from filtered calendar data
+    const filteredEventTypeStats = [];
+    if (filteredCalendarData.length > 0) {
+        const gameEvents = filteredCalendarData.filter(e => e.event_type === 'Game');
+        const practiceEvents = filteredCalendarData.filter(e => e.event_type === 'Practice');
+        const otherEvents = filteredCalendarData.filter(e => e.event_type === 'Other');
+        
+        const calcEventTypeRate = (events) => {
+            const attended = events.filter(e => e.attendance_status === 'present' || e.attendance_status === 'late').length;
+            return events.length > 0 ? (attended / events.length * 100) : 0;
+        };
+        
+        if (gameEvents.length > 0) {
+            filteredEventTypeStats.push({
+                event_type: 'Game',
+                attendance_rate: calcEventTypeRate(gameEvents).toFixed(2),
+                total_records: gameEvents.length
+            });
+        }
+        if (practiceEvents.length > 0) {
+            filteredEventTypeStats.push({
+                event_type: 'Practice',
+                attendance_rate: calcEventTypeRate(practiceEvents).toFixed(2),
+                total_records: practiceEvents.length
+            });
+        }
+        if (otherEvents.length > 0) {
+            filteredEventTypeStats.push({
+                event_type: 'Other',
+                attendance_rate: calcEventTypeRate(otherEvents).toFixed(2),
+                total_records: otherEvents.length
+            });
+        }
+    }
+    
+    // Recalculate seasonal stats from filtered calendar data
+    const filteredSeasonStats = [];
+    if (filteredCalendarData.length > 0) {
+        const seasonMap = {};
+        filteredCalendarData.forEach(e => {
+            const date = new Date(e.date);
+            const month = date.getMonth() + 1;
+            let season = 'Unknown';
+            if ([8, 9, 10, 11, 12].includes(month)) season = 'Fall';
+            else if ([1, 2, 3, 4, 5].includes(month)) season = 'Spring';
+            else season = 'Summer';
+            
+            if (!seasonMap[season]) seasonMap[season] = { total: 0, attended: 0 };
+            seasonMap[season].total++;
+            if (e.attendance_status === 'present' || e.attendance_status === 'late') {
+                seasonMap[season].attended++;
+            }
+        });
+        
+        Object.keys(seasonMap).forEach(season => {
+            const rate = (seasonMap[season].attended / seasonMap[season].total * 100).toFixed(2);
+            filteredSeasonStats.push({
+                season: season,
+                attendance_rate: parseFloat(rate),
+                total_records: seasonMap[season].total
+            });
+        });
+    }
+    
+    // Recalculate monthly trend from filtered calendar data
+    const filteredMonthlyTrend = [];
+    if (filteredCalendarData.length > 0) {
+        const monthMap = {};
+        filteredCalendarData.forEach(e => {
+            const date = new Date(e.date);
+            const yearMonth = date.toISOString().slice(0, 7); // YYYY-MM format
+            
+            if (!monthMap[yearMonth]) monthMap[yearMonth] = { total: 0, attended: 0 };
+            monthMap[yearMonth].total++;
+            if (e.attendance_status === 'present' || e.attendance_status === 'late') {
+                monthMap[yearMonth].attended++;
+            }
+        });
+        
+        Object.keys(monthMap).sort().forEach(yearMonth => {
+            const rate = (monthMap[yearMonth].attended / monthMap[yearMonth].total * 100).toFixed(2);
+            filteredMonthlyTrend.push({
+                month: yearMonth,
+                attendance_rate: parseFloat(rate),
+                total_records: monthMap[yearMonth].total
+            });
+        });
+    }
+    
     const overallAttendanceRate = totalRecords > 0 ? (totalAttended / totalRecords * 100) : 0;
     
     const filteredSummary = {
@@ -108,9 +196,9 @@ function filterOverviewData(data, teamFilter, genderFilter, birthYearFilter) {
         summary: filteredSummary,
         team_stats: filteredTeams,
         player_stats: filteredPlayerStats,
-        event_type_stats: filteredEventTypeStats,
-        season_stats: filteredSeasonStats,
-        monthly_trend: filteredMonthlyTrend,
+        event_type_stats: filteredEventTypeStats.length > 0 ? filteredEventTypeStats : data.event_type_stats,
+        season_stats: filteredSeasonStats.length > 0 ? filteredSeasonStats : data.season_stats,
+        monthly_trend: filteredMonthlyTrend.length > 0 ? filteredMonthlyTrend : data.monthly_trend,
         team_event_comparison: data.team_event_comparison,
         team_season_avg: data.team_season_avg
     };

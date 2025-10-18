@@ -64,11 +64,15 @@ def analyze_attendance_data(df):
     
     # Overall statistics
     total_records = len(df)
-    # Count unique players by combination of first name, last name, and team to handle duplicates
-    df['player_unique_key'] = df['player_first_name'] + '_' + df['player_last_name'] + '_' + df['team_name'].astype(str)
-    total_players = df['player_unique_key'].nunique()
     total_teams = df['team_id'].nunique()
     total_events = df.groupby(['team_id', 'event_name', 'date']).ngroups
+    
+    # Calculate total players as sum of unique players per team (total roster size)
+    total_players = 0
+    for team_id in df['team_id'].unique():
+        team_data = df[df['team_id'] == team_id]
+        unique_players_in_team = team_data['player_id'].nunique()
+        total_players += unique_players_in_team
     
     # Attendance distribution
     attendance_dist = df['attendance_status'].value_counts().to_dict()
