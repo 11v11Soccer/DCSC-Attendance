@@ -748,13 +748,8 @@ function renderOverviewTab(data) {
             }
         }
     });
-}
 
-// Render Teams Tab
-function renderTeamsTab(data) {
-    allTeams = data.team_stats.map(t => t.team_name);
-    
-    // Team Comparison Chart
+    // Team Attendance Comparison Chart (moved from Teams tab)
     const teamCompCtx = document.getElementById('teamComparisonChart').getContext('2d');
     if (charts.teamComparison) charts.teamComparison.destroy();
     
@@ -794,6 +789,11 @@ function renderTeamsTab(data) {
             }
         }
     });
+}
+
+// Render Teams Tab
+function renderTeamsTab(data) {
+    allTeams = data.team_stats.map(t => t.team_name);
 
     // Team Event Comparison Chart
     const teamEventCtx = document.getElementById('teamEventComparisonChart').getContext('2d');
