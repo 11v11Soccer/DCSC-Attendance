@@ -183,9 +183,12 @@ function filterOverviewData(data, teamFilter, genderFilter, birthYearFilter) {
     
     const overallAttendanceRate = totalRecords > 0 ? (totalAttended / totalRecords * 100) : 0;
     
+    // Calculate total players as sum of unique players per filtered team (roster size)
+    const totalPlayersInFilteredTeams = filteredTeams.reduce((sum, team) => sum + team.total_players, 0);
+    
     const filteredSummary = {
         total_records: totalRecords,
-        total_players: filteredPlayerStats.length,
+        total_players: totalPlayersInFilteredTeams,
         total_teams: filteredTeams.length,
         total_events: filteredTeams.reduce((sum, t) => sum + t.total_events, 0),
         overall_attendance_rate: overallAttendanceRate.toFixed(2),
