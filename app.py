@@ -73,9 +73,6 @@ def analyze_attendance_data(df):
         team_data = df[df['team_id'] == team_id]
         unique_players_in_team = team_data['player_id'].nunique()
         total_players += unique_players_in_team
-        print(f"Team ID {team_id}: {unique_players_in_team} unique players")
-    
-    print(f"TOTAL PLAYERS CALCULATED: {total_players}")
     
     # Attendance distribution
     attendance_dist = df['attendance_status'].value_counts().to_dict()
