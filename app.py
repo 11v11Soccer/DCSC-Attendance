@@ -227,6 +227,46 @@ def analyze_attendance_data(df):
     # Sort by date
     event_attendance_tracking = sorted(event_attendance_tracking, key=lambda x: x['date'])
     
+    # Player calendar data - individual player attendance by date
+    player_calendar_data = []
+    for player_id, player_group in df.groupby('player_id'):
+        player_name = f"{player_group['player_first_name'].iloc[0]} {player_group['player_last_name'].iloc[0]}"
+        team_name = player_group['team_name'].iloc[0]
+        
+        for _, row in player_group[player_group['date'].notna()].iterrows():
+            player_calendar_data.append({
+                'player_id': int(player_id),
+                'player_name': player_name,
+                'team_name': team_name,
+                'date': row['date'].strftime('%Y-%m-%d'),
+                'event_name': row['event_name'],
+                'event_type': row['event_type'],
+                'attendance_status': row['attendance_status']
+            })
+    
+    # Team calendar data - team attendance by date (aggregated)
+    team_calendar_data = []
+    for (team_id, date, event_name), event_group in df[df['date'].notna()].groupby(['team_id', 'date', 'event_name']):
+        team_name = event_group['team_name'].iloc[0]
+        event_type = event_group['event_type'].iloc[0]
+        
+        # Count by status
+        status_counts = event_group['attendance_status'].value_counts().to_dict()
+        
+        team_calendar_data.append({
+            'team_id': int(team_id),
+            'team_name': team_name,
+            'date': date.strftime('%Y-%m-%d'),
+            'event_name': event_name,
+            'event_type': event_type,
+            'present': int(status_counts.get('present', 0)),
+            'absent': int(status_counts.get('absent', 0)),
+            'late': int(status_counts.get('late', 0)),
+            'injured': int(status_counts.get('injured', 0)),
+            'not_reported': int(status_counts.get('not_reported', 0)),
+            'total_players': len(event_group)
+        })
+    
     return {
         'summary': {
             'total_records': int(total_records),
@@ -243,7 +283,9 @@ def analyze_attendance_data(df):
         'player_stats': player_stats,
         'monthly_trend': monthly_trend,
         'team_event_comparison': team_event_comparison,
-        'event_attendance_tracking': event_attendance_tracking
+        'event_attendance_tracking': event_attendance_tracking,
+        'player_calendar_data': player_calendar_data,
+        'team_calendar_data': team_calendar_data
     }
 
 @app.route('/')

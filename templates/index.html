@@ -203,6 +203,37 @@
                             <p style="color: var(--text-secondary);">Choose a team and event type above, then click "Show Trend" to see how attendance changes over time.</p>
                         </div>
                     </div>
+                    
+                    <!-- Team Calendar View -->
+                    <div class="data-table-card">
+                        <h3>Team Attendance Calendar</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 20px;">Visual calendar showing team attendance breakdown for all events throughout the year</p>
+                        
+                        <div class="filter-section" style="margin-bottom: 25px;">
+                            <div class="filter-group">
+                                <label for="calTeamFilter">Select Team</label>
+                                <select id="calTeamFilter">
+                                    <option value="">Select a team...</option>
+                                </select>
+                            </div>
+                            <div class="filter-group" style="display: flex; align-items: flex-end;">
+                                <button id="showTeamCalendar" class="btn btn-primary">
+                                    <i class="fas fa-calendar"></i> Show Calendar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="teamCalendarContainer" style="display: none;">
+                            <div id="teamCalendarGrid"></div>
+                            <div id="teamCalendarSummary" class="calendar-summary"></div>
+                        </div>
+                        
+                        <div id="teamCalendarNoSelection" style="padding: 40px; text-align: center; background: #f8fafc; border: 2px dashed var(--border-color); border-radius: 12px;">
+                            <i class="fas fa-calendar-alt" style="font-size: 3em; color: var(--primary-color); margin-bottom: 15px;"></i>
+                            <h4 style="color: var(--text-primary); margin-bottom: 10px;">Select a Team to View Calendar</h4>
+                            <p style="color: var(--text-secondary);">Choose a team above and click "Show Calendar" to see attendance patterns throughout the year.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Players Tab -->
@@ -249,6 +280,57 @@
                         <div class="chart-card player-chart-card">
                             <h3>Top 25 Players Needing Attention (Absence Rate)</h3>
                             <canvas id="bottomPlayersChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Player Calendar View -->
+                    <div class="data-table-card">
+                        <h3>Player Attendance Calendar</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 20px;">Visual calendar showing individual player attendance throughout the year</p>
+                        
+                        <div class="filter-section" style="margin-bottom: 25px;">
+                            <div class="filter-group">
+                                <label for="calPlayerGenderFilter">Gender</label>
+                                <select id="calPlayerGenderFilter">
+                                    <option value="">All Genders</option>
+                                    <option value="G">Girls</option>
+                                    <option value="B">Boys</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="calPlayerBirthYearFilter">Birth Year</label>
+                                <select id="calPlayerBirthYearFilter">
+                                    <option value="">All Birth Years</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="calPlayerTeamFilter">Team</label>
+                                <select id="calPlayerTeamFilter">
+                                    <option value="">Select a team...</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="calPlayerNameFilter">Player</label>
+                                <select id="calPlayerNameFilter">
+                                    <option value="">Select a player...</option>
+                                </select>
+                            </div>
+                            <div class="filter-group" style="display: flex; align-items: flex-end;">
+                                <button id="showPlayerCalendar" class="btn btn-primary">
+                                    <i class="fas fa-calendar"></i> Show Calendar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="playerCalendarContainer" style="display: none;">
+                            <div id="playerCalendarGrid"></div>
+                            <div id="playerCalendarSummary" class="calendar-summary"></div>
+                        </div>
+                        
+                        <div id="playerCalendarNoSelection" style="padding: 40px; text-align: center; background: #f8fafc; border: 2px dashed var(--border-color); border-radius: 12px;">
+                            <i class="fas fa-calendar-alt" style="font-size: 3em; color: var(--primary-color); margin-bottom: 15px;"></i>
+                            <h4 style="color: var(--text-primary); margin-bottom: 10px;">Select a Player to View Calendar</h4>
+                            <p style="color: var(--text-secondary);">Choose filters above and click "Show Calendar" to see attendance patterns throughout the year.</p>
                         </div>
                     </div>
                 </div>
