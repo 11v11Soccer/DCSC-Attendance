@@ -73,12 +73,15 @@ def analyze_attendance_data(df):
         team_data = df[df['team_id'] == team_id]
         unique_players_in_team = team_data['player_id'].nunique()
         total_players += unique_players_in_team
+        print(f"Team ID {team_id}: {unique_players_in_team} unique players")
+    
+    print(f"TOTAL PLAYERS CALCULATED: {total_players}")
     
     # Attendance distribution
     attendance_dist = df['attendance_status'].value_counts().to_dict()
     
-    # Calculate attendance rate (Present + Late as "attended")
-    attended = len(df[df['attendance_status'].isin(['present', 'late'])])
+    # Calculate attendance rate (Present only)
+    attended = len(df[df['attendance_status'] == 'present'])
     attendance_rate = (attended / total_records * 100) if total_records > 0 else 0
     
     # Team statistics

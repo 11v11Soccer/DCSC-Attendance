@@ -755,21 +755,28 @@ function renderTeamsTab(data) {
     const teamCompCtx = document.getElementById('teamComparisonChart').getContext('2d');
     if (charts.teamComparison) charts.teamComparison.destroy();
     
-    const topTeams = data.team_stats.slice(0, 10); // Show top 10 teams
+    // Show all teams (sorted by attendance rate)
+    const allTeams = data.team_stats; // Already sorted from backend
+    
+    // Calculate dynamic height based on number of teams (minimum 40px per team)
+    const chartContainer = document.getElementById('teamComparisonChart').parentElement;
+    const minHeightPerTeam = 40;
+    const calculatedHeight = Math.max(400, allTeams.length * minHeightPerTeam);
+    chartContainer.style.height = calculatedHeight + 'px';
     
     charts.teamComparison = new Chart(teamCompCtx, {
         type: 'bar',
         data: {
-            labels: topTeams.map(t => t.team_name),
+            labels: allTeams.map(t => t.team_name),
             datasets: [{
                 label: 'Attendance Rate (%)',
-                data: topTeams.map(t => t.attendance_rate),
+                data: allTeams.map(t => t.attendance_rate),
                 backgroundColor: '#10b981'
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             indexAxis: 'y',
             scales: {
                 x: {
