@@ -181,6 +181,47 @@ function filterOverviewData(data, teamFilter, genderFilter, birthYearFilter) {
         });
     }
     
+    // Recalculate weekly trend from filtered calendar data
+    const filteredWeeklyTrend = [];
+    if (filteredCalendarData.length > 0) {
+        const weekMap = {};
+        filteredCalendarData.forEach(e => {
+            const date = new Date(e.date);
+            const weekStart = new Date(date);
+            weekStart.setDate(date.getDate() - date.getDay()); // Get Sunday of the week
+            const weekKey = weekStart.toISOString().slice(0, 10); // YYYY-MM-DD format
+            
+            if (!weekMap[weekKey]) {
+                weekMap[weekKey] = { 
+                    total: 0, 
+                    attended: 0, 
+                    weekStart: weekStart,
+                    month: weekStart.toLocaleString('default', { month: 'long', year: 'numeric' }),
+                    month_short: weekStart.toLocaleString('default', { month: 'short' })
+                };
+            }
+            weekMap[weekKey].total++;
+            if (e.attendance_status === 'present' || e.attendance_status === 'late') {
+                weekMap[weekKey].attended++;
+            }
+        });
+        
+        Object.keys(weekMap).sort().forEach(weekKey => {
+            const weekData = weekMap[weekKey];
+            const rate = (weekData.attended / weekData.total * 100).toFixed(2);
+            const weekStart = weekData.weekStart;
+            filteredWeeklyTrend.push({
+                week: weekKey,
+                week_label: weekStart.toLocaleDateString('default', { month: 'short', day: 'numeric' }),
+                attendance_rate: parseFloat(rate),
+                total_records: weekData.total,
+                month: weekData.month,
+                month_short: weekData.month_short,
+                week_start_date: weekKey
+            });
+        });
+    }
+    
     const overallAttendanceRate = totalRecords > 0 ? (totalAttended / totalRecords * 100) : 0;
     
     // Calculate total players as sum of unique players per filtered team (roster size)
@@ -202,6 +243,7 @@ function filterOverviewData(data, teamFilter, genderFilter, birthYearFilter) {
         event_type_stats: filteredEventTypeStats.length > 0 ? filteredEventTypeStats : data.event_type_stats,
         season_stats: filteredSeasonStats.length > 0 ? filteredSeasonStats : data.season_stats,
         monthly_trend: filteredMonthlyTrend.length > 0 ? filteredMonthlyTrend : data.monthly_trend,
+        weekly_trend: filteredWeeklyTrend.length > 0 ? filteredWeeklyTrend : data.weekly_trend,
         team_event_comparison: data.team_event_comparison,
         team_season_avg: data.team_season_avg
     };
@@ -566,9 +608,6 @@ function renderDashboard(data) {
 
 // Render summary cards
 function renderSummaryCards(summary) {
-    console.log('=== renderSummaryCards called ===');
-    console.log('summary.total_players:', summary.total_players);
-    console.log('Full summary:', summary);
     
     const container = document.getElementById('summaryCards');
     
@@ -648,6 +687,7 @@ function renderOverviewTab(data) {
         options: {
             responsive: true,
             maintainAspectRatio: true,
+            aspectRatio: 1.5,
             plugins: {
                 legend: {
                     position: 'bottom'
@@ -696,62 +736,120 @@ function renderOverviewTab(data) {
         }
     });
 
-    // Seasonal Chart
-    const seasonCtx = document.getElementById('seasonChart').getContext('2d');
-    if (charts.season) charts.season.destroy();
+    // Weekly Trends Chart (Color-coded by month)
+    const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+    if (charts.weekly) charts.weekly.destroy();
     
-    charts.season = new Chart(seasonCtx, {
+    // Define month colors (up to 12 different colors for variety)
+    const monthColors = [
+        '#3b82f6', // Blue
+        '#10b981', // Green
+        '#f59e0b', // Orange
+        '#8b5cf6', // Purple
+        '#ef4444', // Red
+        '#14b8a6', // Teal
+        '#f97316', // Dark Orange
+        '#6366f1', // Indigo
+        '#84cc16', // Lime
+        '#ec4899', // Pink
+        '#06b6d4', // Cyan
+        '#a855f7'  // Violet
+    ];
+    
+    // Group weeks by month and assign colors
+    const weeklyData = data.weekly_trend || [];
+    const monthColorMap = {};
+    let colorIndex = 0;
+    
+    // Assign a color to each unique month
+    weeklyData.forEach(week => {
+        if (!monthColorMap[week.month]) {
+            monthColorMap[week.month] = monthColors[colorIndex % monthColors.length];
+            colorIndex++;
+        }
+    });
+    
+    // Prepare data with colors per data point
+    const weeklyLabels = weeklyData.map(w => w.week_label);
+    const weeklyRates = weeklyData.map(w => w.attendance_rate);
+    const backgroundColors = weeklyData.map(w => monthColorMap[w.month] + '33'); // Add transparency
+    const borderColors = weeklyData.map(w => monthColorMap[w.month]);
+    
+    charts.weekly = new Chart(weeklyCtx, {
         type: 'bar',
         data: {
-            labels: data.season_stats.map(s => s.season),
-            datasets: [{
-                label: 'Attendance Rate (%)',
-                data: data.season_stats.map(s => s.attendance_rate),
-                backgroundColor: ['#f59e0b', '#10b981', '#8b5cf6']
-            }]
+            labels: weeklyLabels,
+            datasets: [
+                {
+                    label: 'Weekly Attendance Rate (%)',
+                    data: weeklyRates,
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: 2,
+                    type: 'bar',
+                    order: 2
+                },
+                {
+                    label: 'Trend Line',
+                    data: weeklyRates,
+                    type: 'line',
+                    borderColor: '#1e40af',
+                    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#1e40af',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    fill: false,
+                    tension: 0.3,
+                    order: 1
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: true,
+            aspectRatio: 3,
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 100
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Attendance Rate (%)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
                 }
             },
             plugins: {
                 legend: {
                     display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            const index = context[0].dataIndex;
+                            return weeklyData[index].month;
+                        },
+                        label: function(context) {
+                            return 'Attendance: ' + context.parsed.y + '%';
+                        }
+                    },
+                    filter: function(tooltipItem) {
+                        // Only show tooltip for bars, not the line
+                        return tooltipItem.dataset.type === 'bar';
+                    }
                 }
-            }
-        }
-    });
-
-    // Monthly Trend Chart
-    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-    if (charts.monthly) charts.monthly.destroy();
-    
-    charts.monthly = new Chart(monthlyCtx, {
-        type: 'line',
-        data: {
-            labels: data.monthly_trend.map(m => m.month),
-            datasets: [{
-                label: 'Attendance Rate (%)',
-                data: data.monthly_trend.map(m => m.attendance_rate),
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100
-                }
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false
             }
         }
     });
@@ -806,28 +904,34 @@ function renderTeamsTab(data) {
     const teamEventCtx = document.getElementById('teamEventComparisonChart').getContext('2d');
     if (charts.teamEvent) charts.teamEvent.destroy();
     
-    const topTeamsEvent = data.team_event_comparison.slice(0, 10);
+    // Show all teams (no limit)
+    const allTeamsEvent = data.team_event_comparison;
+    
+    // Calculate dynamic height based on number of teams
+    const teamEventContainer = document.getElementById('teamEventComparisonChart').parentElement;
+    const teamEventHeight = Math.max(400, allTeamsEvent.length * 40); // 40px per team
+    teamEventContainer.style.height = teamEventHeight + 'px';
     
     charts.teamEvent = new Chart(teamEventCtx, {
         type: 'bar',
         data: {
-            labels: topTeamsEvent.map(t => t.team_name),
+            labels: allTeamsEvent.map(t => t.team_name),
             datasets: [
                 {
                     label: 'Games',
-                    data: topTeamsEvent.map(t => t.game_attendance_rate),
+                    data: allTeamsEvent.map(t => t.game_attendance_rate),
                     backgroundColor: '#2563eb'
                 },
                 {
                     label: 'Practice',
-                    data: topTeamsEvent.map(t => t.practice_attendance_rate),
+                    data: allTeamsEvent.map(t => t.practice_attendance_rate),
                     backgroundColor: '#10b981'
                 }
             ]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             indexAxis: 'y',
             scales: {
                 x: {
@@ -1322,7 +1426,12 @@ function renderPlayersTab(data) {
     const topPlayersCtx = document.getElementById('topPlayersChart').getContext('2d');
     if (charts.topPlayers) charts.topPlayers.destroy();
     
-    const topPlayers = data.player_stats.slice(0, 50);
+    const topPlayers = data.player_stats.slice(0, 30);
+    
+    // Calculate dynamic height based on number of players
+    const topPlayersContainer = document.getElementById('topPlayersChart').parentElement;
+    const topPlayersHeight = Math.max(600, topPlayers.length * 25); // 25px per player
+    topPlayersContainer.style.height = topPlayersHeight + 'px';
     
     charts.topPlayers = new Chart(topPlayersCtx, {
         type: 'bar',
@@ -1336,7 +1445,7 @@ function renderPlayersTab(data) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             indexAxis: 'y',
             scales: {
                 x: {
@@ -1359,7 +1468,12 @@ function renderPlayersTab(data) {
     const bottomPlayers = data.player_stats
         .filter(p => p.total_events >= 3) // Only players with at least 3 events
         .sort((a, b) => a.attendance_rate - b.attendance_rate)
-        .slice(0, 50);
+        .slice(0, 30);
+    
+    // Calculate dynamic height based on number of players
+    const bottomPlayersContainer = document.getElementById('bottomPlayersChart').parentElement;
+    const bottomPlayersHeight = Math.max(600, bottomPlayers.length * 25); // 25px per player
+    bottomPlayersContainer.style.height = bottomPlayersHeight + 'px';
     
     charts.bottomPlayers = new Chart(bottomPlayersCtx, {
         type: 'bar',
@@ -1373,7 +1487,7 @@ function renderPlayersTab(data) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             indexAxis: 'y',
             scales: {
                 x: {
@@ -1665,7 +1779,12 @@ function renderTrendsTab(data) {
     
     // Group by season
     const seasons = [...new Set(data.team_season_avg.map(d => d.season))];
-    const teams = [...new Set(data.team_season_avg.map(d => d.team_name))].slice(0, 10); // Top 10 teams
+    const teams = [...new Set(data.team_season_avg.map(d => d.team_name))]; // Show all teams
+    
+    // Calculate dynamic height based on number of teams
+    const teamSeasonContainer = document.getElementById('teamSeasonAvgChart').parentElement;
+    const teamSeasonHeight = Math.max(400, teams.length * 40); // 40px per team
+    teamSeasonContainer.style.height = teamSeasonHeight + 'px';
     
     const datasets = seasons.map((season, idx) => {
         const colors = ['#2563eb', '#10b981', '#f59e0b'];
@@ -1687,7 +1806,7 @@ function renderTrendsTab(data) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             scales: {
                 y: {
                     beginAtZero: true

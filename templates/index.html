@@ -107,7 +107,7 @@
                     </div>
                     
                     <div class="charts-row">
-                        <div class="chart-card">
+                        <div class="chart-card pie-chart-card">
                             <h3>Attendance Distribution</h3>
                             <canvas id="attendanceChart"></canvas>
                         </div>
@@ -117,15 +117,9 @@
                         </div>
                     </div>
                     
-                    <div class="charts-row">
-                        <div class="chart-card">
-                            <h3>Seasonal Attendance</h3>
-                            <canvas id="seasonChart"></canvas>
-                        </div>
-                        <div class="chart-card">
-                            <h3>Monthly Trend</h3>
-                            <canvas id="monthlyChart"></canvas>
-                        </div>
+                    <div class="chart-card full-width">
+                        <h3>Weekly Attendance Trends (Color-Coded by Month)</h3>
+                        <canvas id="weeklyChart"></canvas>
                     </div>
                     
                     <div class="charts-row">
@@ -386,11 +380,11 @@
                     
                     <div class="charts-row">
                         <div class="chart-card player-chart-card">
-                            <h3>Top 50 Performers</h3>
+                            <h3>Top 30 Performers</h3>
                             <canvas id="topPlayersChart"></canvas>
                         </div>
                         <div class="chart-card player-chart-card">
-                            <h3>Top 50 Players Needing Attention (Absence Rate)</h3>
+                            <h3>Top 30 Players Needing Attention (Absence Rate)</h3>
                             <canvas id="bottomPlayersChart"></canvas>
                         </div>
                     </div>

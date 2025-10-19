@@ -4,6 +4,7 @@ A Flask application for analyzing soccer team attendance data
 """
 
 from flask import Flask, render_template, request, jsonify, session
+from flask_basicauth import BasicAuth
 import pandas as pd
 import os
 from datetime import datetime
@@ -15,6 +16,13 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+
+# Basic Authentication Configuration
+app.config['BASIC_AUTH_USERNAME'] = os.environ.get('BASIC_AUTH_USERNAME', 'admin')
+app.config['BASIC_AUTH_PASSWORD'] = os.environ.get('BASIC_AUTH_PASSWORD', 'changeme')
+app.config['BASIC_AUTH_FORCE'] = True
+
+basic_auth = BasicAuth(app)
 
 # Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -69,6 +77,7 @@ def analyze_attendance_data(df):
     
     # Calculate total players as sum of unique players per team (total roster size)
     total_players = 0
+    
     for team_id in df['team_id'].unique():
         team_data = df[df['team_id'] == team_id]
         unique_players_in_team = team_data['player_id'].nunique()
@@ -184,6 +193,33 @@ def analyze_attendance_data(df):
     
     monthly_trend = sorted(monthly_trend, key=lambda x: x['month'])
     
+    # Weekly trend (color-coded by month)
+    weekly_trend = []
+    if len(df_with_date) > 0:
+        df_with_date['year_week'] = df_with_date['date'].dt.to_period('W')
+        for period, period_group in df_with_date.groupby('year_week'):
+            period_records = len(period_group)
+            period_attended = len(period_group[period_group['attendance_status'].isin(['present', 'late'])])
+            period_rate = (period_attended / period_records * 100) if period_records > 0 else 0
+            
+            # Get the start date of the week and extract month info
+            week_start = period.start_time
+            month_name = week_start.strftime('%B %Y')  # e.g., "January 2024"
+            month_short = week_start.strftime('%b')     # e.g., "Jan"
+            week_label = week_start.strftime('Week of %b %d')  # e.g., "Week of Jan 15"
+            
+            weekly_trend.append({
+                'week': str(period),
+                'week_label': week_label,
+                'attendance_rate': round(period_rate, 2),
+                'total_records': int(period_records),
+                'month': month_name,
+                'month_short': month_short,
+                'week_start_date': week_start.strftime('%Y-%m-%d')
+            })
+    
+    weekly_trend = sorted(weekly_trend, key=lambda x: x['week_start_date'])
+    
     # Game vs Practice attendance by team
     team_event_comparison = []
     for team_id, team_group in df.groupby('team_id'):
@@ -217,7 +253,7 @@ def analyze_attendance_data(df):
             
             # Count present players (including late)
             present_count = len(event_group[event_group['attendance_status'].isin(['present', 'late'])])
-            total_players = len(event_group)
+            event_total_players = len(event_group)
             
             event_attendance_tracking.append({
                 'team_id': int(team_id),
@@ -226,8 +262,8 @@ def analyze_attendance_data(df):
                 'date': date.strftime('%Y-%m-%d'),
                 'event_type': event_type,
                 'present_count': int(present_count),
-                'total_players': int(total_players),
-                'attendance_rate': round((present_count / total_players * 100), 2) if total_players > 0 else 0
+                'total_players': int(event_total_players),
+                'attendance_rate': round((present_count / event_total_players * 100), 2) if event_total_players > 0 else 0
             })
     
     # Sort by date
@@ -288,6 +324,7 @@ def analyze_attendance_data(df):
         'team_season_avg': team_season_avg,
         'player_stats': player_stats,
         'monthly_trend': monthly_trend,
+        'weekly_trend': weekly_trend,
         'team_event_comparison': team_event_comparison,
         'event_attendance_tracking': event_attendance_tracking,
         'player_calendar_data': player_calendar_data,
