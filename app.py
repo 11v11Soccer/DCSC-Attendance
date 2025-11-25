@@ -17,12 +17,16 @@ app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-producti
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
-# Basic Authentication Configuration
-app.config['BASIC_AUTH_USERNAME'] = os.environ.get('BASIC_AUTH_USERNAME', 'admin')
-app.config['BASIC_AUTH_PASSWORD'] = os.environ.get('BASIC_AUTH_PASSWORD', 'changeme')
-app.config['BASIC_AUTH_FORCE'] = True
-
-basic_auth = BasicAuth(app)
+# Basic Authentication Configuration (disabled for local development)
+# Enable by setting environment variables: BASIC_AUTH_USERNAME and BASIC_AUTH_PASSWORD
+if os.environ.get('BASIC_AUTH_USERNAME') and os.environ.get('BASIC_AUTH_PASSWORD'):
+    app.config['BASIC_AUTH_USERNAME'] = os.environ.get('BASIC_AUTH_USERNAME')
+    app.config['BASIC_AUTH_PASSWORD'] = os.environ.get('BASIC_AUTH_PASSWORD')
+    app.config['BASIC_AUTH_FORCE'] = True
+    basic_auth = BasicAuth(app)
+    print("🔐 Password protection ENABLED")
+else:
+    print("⚠️  Password protection DISABLED (local development mode)")
 
 # Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
