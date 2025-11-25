@@ -10,6 +10,8 @@ from datetime import datetime
 import json
 from werkzeug.utils import secure_filename
 import uuid
+from ai_service import get_ai_service
+from ai_service import get_ai_service
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -284,6 +286,84 @@ def analyze():
         return jsonify(analysis)
     except Exception as e:
         return jsonify({'error': f'Error analyzing data: {str(e)}'}), 500
+
+@app.route('/ai/check', methods=['GET'])
+def check_ai():
+    """Check if Ollama AI service is available"""
+    ai_service = get_ai_service()
+    if ai_service and ai_service.check_connection():
+        available_models = ai_service.list_available_models()
+        return jsonify({
+            'available': True,
+            'model': ai_service.model,
+            'available_models': available_models
+        })
+    else:
+        return jsonify({
+            'available': False,
+            'message': 'Ollama is not running. Please start Ollama to enable AI summaries.'
+        })
+
+@app.route('/ai/summary/<section>', methods=['GET'])
+def get_ai_summary(section):
+    """Get AI-generated summary for a specific section"""
+    if 'data_file' not in session:
+        return jsonify({'error': 'No data uploaded. Please upload a CSV file first.'}), 400
+    
+    ai_service = get_ai_service()
+    if not ai_service or not ai_service.check_connection():
+        return jsonify({
+            'error': 'AI service not available. Please ensure Ollama is running.',
+            'available': False
+        }), 503
+    
+    try:
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], session['data_file'])
+        df = pd.read_csv(filepath)
+        analysis = analyze_attendance_data(df)
+        
+        summary = None
+        
+        if section == 'overview':
+            summary = ai_service.generate_overview_summary(
+                analysis['summary'],
+                analysis['event_type_stats'],
+                analysis['season_stats'],
+                analysis['monthly_trend']
+            )
+        elif section == 'teams':
+            summary = ai_service.generate_teams_summary(
+                analysis['team_stats'],
+                analysis['team_event_comparison']
+            )
+        elif section == 'players':
+            summary = ai_service.generate_players_summary(
+                analysis['player_stats']
+            )
+        elif section == 'trends':
+            summary = ai_service.generate_trends_summary(
+                analysis['team_season_avg'],
+                analysis['season_stats'],
+                analysis['team_stats'],
+                analysis['monthly_trend']
+            )
+        else:
+            return jsonify({'error': f'Unknown section: {section}'}), 400
+        
+        if summary:
+            return jsonify({
+                'success': True,
+                'summary': summary,
+                'section': section
+            })
+        else:
+            return jsonify({
+                'error': 'Failed to generate summary. Check Ollama connection and model availability.',
+                'available': False
+            }), 500
+            
+    except Exception as e:
+        return jsonify({'error': f'Error generating summary: {str(e)}'}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeUpload();
     initializeTabs();
     checkExistingData();
+    checkAIAvailability();
 });
 
 // Upload functionality
@@ -629,5 +630,122 @@ function getAttendanceStatus(rate) {
     if (rate >= 75) return { class: 'good', text: 'Good' };
     if (rate >= 60) return { class: 'fair', text: 'Fair' };
     return { class: 'poor', text: 'Needs Attention' };
+}
+
+// AI Summary Functions
+let aiAvailable = false;
+
+// Check if AI service is available
+async function checkAIAvailability() {
+    try {
+        const response = await fetch('/ai/check');
+        const data = await response.json();
+        aiAvailable = data.available || false;
+        
+        // Update UI to show AI status
+        updateAIStatusIndicators(aiAvailable, data.model || null);
+    } catch (error) {
+        console.log('AI service check failed:', error);
+        aiAvailable = false;
+        updateAIStatusIndicators(false, null);
+    }
+}
+
+// Update AI status indicators in the UI
+function updateAIStatusIndicators(available, model) {
+    const buttons = document.querySelectorAll('.ai-generate-btn');
+    buttons.forEach(btn => {
+        if (available) {
+            btn.disabled = false;
+            btn.title = model ? `Using ${model} model` : 'AI available';
+        } else {
+            btn.disabled = true;
+            btn.title = 'AI not available - Please start Ollama';
+        }
+    });
+    
+    // Add status badge to first AI card
+    const firstCard = document.querySelector('.ai-summary-card');
+    if (firstCard) {
+        let statusBadge = firstCard.querySelector('.ai-status-badge');
+        if (!statusBadge) {
+            statusBadge = document.createElement('span');
+            statusBadge.className = 'ai-status-badge';
+            const header = firstCard.querySelector('.ai-summary-header');
+            if (header) {
+                header.appendChild(statusBadge);
+            }
+        }
+        
+        if (available) {
+            statusBadge.className = 'ai-status-badge available';
+            statusBadge.innerHTML = `<i class="fas fa-check-circle"></i> AI Ready${model ? ` (${model})` : ''}`;
+        } else {
+            statusBadge.className = 'ai-status-badge unavailable';
+            statusBadge.innerHTML = `<i class="fas fa-exclamation-circle"></i> AI Unavailable`;
+        }
+    }
+}
+
+// Generate AI summary for a specific section
+async function generateAISummary(section) {
+    const contentDiv = document.getElementById(`aiSummary${section.charAt(0).toUpperCase() + section.slice(1)}Content`);
+    const button = event.target.closest('.ai-generate-btn');
+    
+    if (!aiAvailable) {
+        contentDiv.innerHTML = `
+            <div class="ai-summary-error">
+                <strong>AI Service Not Available</strong><br>
+                Please ensure Ollama is installed and running. See the installation guide for details.
+            </div>
+        `;
+        return;
+    }
+    
+    // Show loading state
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    contentDiv.innerHTML = `
+        <div class="ai-summary-loading">
+            <div class="spinner"></div>
+            <span>Analyzing data and generating insights...</span>
+        </div>
+    `;
+    
+    try {
+        const response = await fetch(`/ai/summary/${section}`);
+        const data = await response.json();
+        
+        if (data.success && data.summary) {
+            // Display the summary
+            contentDiv.innerHTML = `<p>${data.summary.replace(/\n/g, '<br>')}</p>`;
+            
+            // Re-enable button
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-magic"></i> Generate Summary';
+        } else {
+            // Show error
+            contentDiv.innerHTML = `
+                <div class="ai-summary-error">
+                    <strong>Error Generating Summary</strong><br>
+                    ${data.error || 'Failed to generate summary. Please try again or check Ollama connection.'}
+                </div>
+            `;
+            
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-magic"></i> Generate Summary';
+        }
+    } catch (error) {
+        console.error('Error generating AI summary:', error);
+        contentDiv.innerHTML = `
+            <div class="ai-summary-error">
+                <strong>Connection Error</strong><br>
+                Could not connect to AI service. Please ensure Ollama is running and try again.
+            </div>
+        `;
+        
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-magic"></i> Generate Summary';
+    }
 }
 

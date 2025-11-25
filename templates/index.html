@@ -64,6 +64,20 @@
                 
                 <!-- Overview Tab -->
                 <div class="tab-pane active" id="overview">
+                    <!-- AI Summary Box -->
+                    <div class="ai-summary-card" id="aiSummaryOverview">
+                        <div class="ai-summary-header">
+                            <i class="fas fa-robot"></i>
+                            <h3>AI Insights</h3>
+                            <button class="ai-generate-btn" onclick="generateAISummary('overview')">
+                                <i class="fas fa-magic"></i> Generate Summary
+                            </button>
+                        </div>
+                        <div class="ai-summary-content" id="aiSummaryOverviewContent">
+                            <p class="ai-summary-placeholder">Click "Generate Summary" to get AI-powered insights about overall attendance patterns.</p>
+                        </div>
+                    </div>
+                    
                     <div class="charts-row">
                         <div class="chart-card">
                             <h3>Attendance Distribution</h3>
@@ -89,6 +103,20 @@
 
                 <!-- Teams Tab -->
                 <div class="tab-pane" id="teams">
+                    <!-- AI Summary Box -->
+                    <div class="ai-summary-card" id="aiSummaryTeams">
+                        <div class="ai-summary-header">
+                            <i class="fas fa-robot"></i>
+                            <h3>AI Insights</h3>
+                            <button class="ai-generate-btn" onclick="generateAISummary('teams')">
+                                <i class="fas fa-magic"></i> Generate Summary
+                            </button>
+                        </div>
+                        <div class="ai-summary-content" id="aiSummaryTeamsContent">
+                            <p class="ai-summary-placeholder">Click "Generate Summary" to get AI-powered insights about team performance, top/bottom teams, and age/gender patterns.</p>
+                        </div>
+                    </div>
+                    
                     <div class="charts-row">
                         <div class="chart-card full-width">
                             <h3>Team Attendance Comparison</h3>
@@ -124,6 +152,20 @@
 
                 <!-- Players Tab -->
                 <div class="tab-pane" id="players">
+                    <!-- AI Summary Box -->
+                    <div class="ai-summary-card" id="aiSummaryPlayers">
+                        <div class="ai-summary-header">
+                            <i class="fas fa-robot"></i>
+                            <h3>AI Insights</h3>
+                            <button class="ai-generate-btn" onclick="generateAISummary('players')">
+                                <i class="fas fa-magic"></i> Generate Summary
+                            </button>
+                        </div>
+                        <div class="ai-summary-content" id="aiSummaryPlayersContent">
+                            <p class="ai-summary-placeholder">Click "Generate Summary" to get AI-powered insights about top performers and players needing attention.</p>
+                        </div>
+                    </div>
+                    
                     <div class="filter-section">
                         <div class="filter-group">
                             <label for="playerSearch">Search Player:</label>
@@ -172,6 +214,20 @@
 
                 <!-- Trends Tab -->
                 <div class="tab-pane" id="trends">
+                    <!-- AI Summary Box -->
+                    <div class="ai-summary-card" id="aiSummaryTrends">
+                        <div class="ai-summary-header">
+                            <i class="fas fa-robot"></i>
+                            <h3>AI Insights</h3>
+                            <button class="ai-generate-btn" onclick="generateAISummary('trends')">
+                                <i class="fas fa-magic"></i> Generate Summary
+                            </button>
+                        </div>
+                        <div class="ai-summary-content" id="aiSummaryTrendsContent">
+                            <p class="ai-summary-placeholder">Click "Generate Summary" to get AI-powered insights about attendance trends and patterns over time.</p>
+                        </div>
+                    </div>
+                    
                     <div class="charts-row">
                         <div class="chart-card full-width">
                             <h3>Average Players Per Event by Team & Season</h3>
