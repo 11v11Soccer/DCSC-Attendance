@@ -4,6 +4,13 @@ A comprehensive, user-friendly web application for analyzing soccer team attenda
 
 ## Features
 
+### 🤖 AI-Powered Insights (NEW!)
+- **Narrative Summaries**: Get AI-generated insights for each dashboard section
+- **Pattern Recognition**: Automatically identifies top/bottom performers and trends
+- **Age/Gender Analysis**: Analyzes attendance patterns by age groups and gender
+- **Local Processing**: Uses Ollama for privacy-first, offline AI analysis
+- **Smart Context**: Understands your data and provides actionable recommendations
+
 ### 📊 Comprehensive Analytics
 - **Overall Statistics**: View total players, teams, events, and overall attendance rates
 - **Team Analysis**: Compare attendance rates across different teams
@@ -48,6 +55,11 @@ A comprehensive, user-friendly web application for analyzing soccer team attenda
    ```bash
    python app.py
    ```
+   Or use the startup script:
+   ```bash
+   ./run.sh  # Mac/Linux
+   run.bat   # Windows
+   ```
 
 4. **Open your browser**
    Navigate to `http://localhost:5000`
@@ -65,6 +77,11 @@ A comprehensive, user-friendly web application for analyzing soccer team attenda
      - `player_first_name`
      - `player_last_name`
      - `attendance` (values: Present, Absent, Late, Injured, None)
+
+6. **Enable AI Summaries (Optional)**
+   - Install Ollama: See `OLLAMA_INSTALLATION.md`
+   - Download a model: `ollama pull llama3.2`
+   - Click "Generate Summary" on any tab for AI-powered insights
 
 ## Deployment on Render
 
@@ -234,12 +251,34 @@ Edit `static/css/style.css` and modify the `:root` variables:
 2. Update frontend in `static/js/app.js` to display the new metric
 3. Add visualizations as needed
 
+## AI Features
+
+The dashboard includes **AI-powered narrative summaries** using local LLM models:
+
+- **🤖 Intelligent Analysis**: AI analyzes your data and provides context-rich insights
+- **📊 Section-Specific Summaries**: Get tailored summaries for Overview, Teams, Players, and Trends
+- **🔍 Pattern Recognition**: Automatically identifies top performers, trends, and improvement opportunities
+- **👥 Demographic Analysis**: Extracts age and gender patterns from team names
+- **🔒 Privacy-First**: Everything runs locally using Ollama - your data never leaves your computer
+
+**To enable AI features:**
+1. Install Ollama (see `OLLAMA_INSTALLATION.md`)
+2. Download a model: `ollama pull llama3.2`
+3. Start Ollama (should auto-start)
+4. Click "Generate Summary" on any dashboard tab
+
+**Documentation:**
+- `AI_FEATURES.md` - Complete AI feature guide
+- `OLLAMA_INSTALLATION.md` - Step-by-step installation
+- `AI_ADDITION_SUMMARY.md` - Technical details
+
 ## Support
 
 For questions or issues:
 1. Check this README first
 2. Review the troubleshooting section
-3. Contact your technical administrator
+3. Check AI-specific guides if using AI features
+4. Contact your technical administrator
 
 ## License
 

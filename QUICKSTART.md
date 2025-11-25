@@ -7,6 +7,7 @@ This guide is designed for **non-technical users** (coaches and directors) to ge
 - A computer (Mac or Windows)
 - Your attendance CSV file
 - Internet connection (for deployment)
+- **Ollama** (optional, for AI-powered summaries - see below)
 
 ---
 
@@ -99,6 +100,12 @@ Your CSV file should have these columns (in this exact order):
 4. The dashboard will appear automatically
 
 ### 2. Navigate the Dashboard
+
+**🤖 NEW: AI-Powered Insights!**
+- Each tab now has an "AI Insights" box at the top
+- Click "Generate Summary" to get AI-generated narrative insights
+- See patterns, top performers, and recommendations automatically
+- Requires Ollama to be installed (optional feature)
 
 The dashboard has 4 main sections (tabs):
 

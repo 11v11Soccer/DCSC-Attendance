@@ -8,7 +8,15 @@ A complete, production-ready web application for analyzing soccer team attendanc
 
 ## 🎯 Key Features Implemented
 
-### 1. Data Processing & Analytics
+### 1. AI-Powered Insights 🤖 (NEW!)
+- **Local LLM Integration**: Uses Ollama for privacy-first AI analysis
+- **Narrative Summaries**: Generates human-readable insights for each dashboard section
+- **Pattern Recognition**: Automatically identifies top/bottom performers, trends, and patterns
+- **Age/Gender Analysis**: Extracts demographic patterns from team names
+- **Offline Processing**: No cloud APIs - everything runs locally for complete privacy
+- **Smart Context**: Understands your data and provides actionable recommendations
+
+### 2. Data Processing & Analytics
 - **Automated CSV parsing** with validation
 - **Comprehensive statistics** calculation:
   - Overall attendance rates
@@ -149,6 +157,8 @@ DCSC/Attendance/
 - **Flask 3.0.0** - Web framework
 - **Pandas 2.1.3** - Data processing
 - **Gunicorn 21.2.0** - Production server
+- **Ollama Integration** - Local LLM for AI summaries (optional)
+- **Requests 2.31.0** - HTTP client for Ollama API
 
 ### Frontend
 - **Vanilla JavaScript** - No framework overhead
